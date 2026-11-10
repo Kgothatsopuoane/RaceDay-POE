@@ -1,0 +1,391 @@
+﻿@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Browse Events";
+
+    JsonElement events = ViewBag.Events is JsonElement eventJson
+        ? eventJson : default;
+
+    JsonElement categories = ViewBag.Categories is JsonElement categoryJson
+        ? categoryJson : default;
+
+    bool hasEvents = events.ValueKind == JsonValueKind.Array
+        && events.GetArrayLength() > 0;
+
+    bool hasCategories = categories.ValueKind == JsonValueKind.Array
+        && categories.GetArrayLength() > 0;
+}
+
+<div class="container mt-4 mb-5">
+
+    <h2>Upcoming Events</h2>
+
+    <p class="text-muted">
+        Discover available RaceDay events and enrol in one.
+    </p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["EnrolError"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["EnrolError"]
+        </div>
+    }
+
+    @if (ViewBag.ApiError != null)
+    {
+        <div class="alert alert-danger">
+            Could not load events: @ViewBag.ApiError
+        </div>
+    }
+    else if (hasEvents)
+    {
+        <!-- SEARCH AND FILTERS -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+
+                <h5 class="mb-3">Find an Event</h5>
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+                        <label for="eventSearch" class="form-label">
+                            Search by event name
+                        </label>
+
+                        <input type="text"
+                               id="eventSearch"
+                               class="form-control"
+                               placeholder="Enter event name..." />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="locationFilter" class="form-label">
+                            Filter by location
+                        </label>
+
+                        <select id="locationFilter" class="form-select">
+                            <option value="">All locations</option>
+                            @foreach (var item in events.EnumerateArray())
+                            {
+                                string locationName =
+                                item.TryGetProperty("location", out var loc)
+                                ? loc.GetString() ?? "Not specified"
+                                : "Not specified";
+
+                                <option value="@locationName">
+                                    @locationName
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="eventTypeFilter" class="form-label">
+                            Filter by event type
+                        </label>
+
+                        <select id="eventTypeFilter" class="form-select">
+                            <option value="">All event types</option>
+                            @foreach (var item in events.EnumerateArray())
+                            {
+                                string typeName =
+                                item.TryGetProperty("eventType", out var type)
+                                ? type.GetString() ?? "Not specified"
+                                : "Not specified";
+
+                                <option value="@typeName">
+                                    @typeName
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="mt-3">
+                    <button type="button"
+                            id="clearFilters"
+                            class="btn btn-outline-secondary">
+                        Clear Filters
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <p id="eventCount" class="text-muted mb-3">
+            Showing @events.GetArrayLength() event(s).
+        </p>
+
+        <!-- EVENT CARDS -->
+        <div class="row g-4" id="eventList">
+
+            @foreach (var item in events.EnumerateArray())
+            {
+                int eventId = item.GetProperty("eventId").GetInt32();
+
+                string eventName =
+                item.GetProperty("eventName").GetString()
+                ?? "Unnamed event";
+
+                string locationName =
+                item.TryGetProperty("location", out var location)
+                ? location.GetString() ?? "Not specified"
+                : "Not specified";
+
+                string typeName =
+                item.TryGetProperty("eventType", out var eventType)
+                ? eventType.GetString() ?? "Not specified"
+                : "Not specified";
+
+                string bannerUrl = Url.Action(
+                "EventBanner",
+                "Participant",
+                new { id = eventId }) ?? "";
+
+                bool hasBanner =
+                item.TryGetProperty("eventBannerUrl", out var banner)
+                && banner.ValueKind == JsonValueKind.String
+                && !string.IsNullOrWhiteSpace(banner.GetString());
+
+                <div class="col-md-6 col-lg-4 event-card"
+                     data-event-name="@eventName"
+                     data-event-location="@locationName"
+                     data-event-type="@typeName">
+
+                    <div class="card shadow h-100 overflow-hidden">
+
+                        @if (hasBanner)
+                        {
+                            <img src="@bannerUrl"
+                                 class="card-img-top"
+                                 alt="@eventName banner"
+                                 style="height: 210px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                 style="height: 210px;">
+                                <span class="text-muted">
+                                    No event banner available
+                                </span>
+                            </div>
+                        }
+
+                    <div class="card-body d-flex flex-column">
+
+                        <h5 class="card-title">
+                            @eventName
+                        </h5>
+
+                        <p class="text-muted">
+                            @(item.TryGetProperty("description", out var description)
+                                                    ? description.GetString()
+                                                    : "No description available.")
+                                                                              </p>
+
+                        <p class="mb-2">
+                            <strong>Date:</strong>
+                            @(item.TryGetProperty("eventDate", out var date)
+                                                    ? date.ToString()
+                                                    : "Not specified")
+                                                                  </p>
+
+                        <p class="mb-2">
+                            <strong>Location:</strong>
+                            @locationName
+                        </p>
+
+                        <p class="mb-2">
+                            <strong>Distance:</strong>
+                            @(item.TryGetProperty("distanceKm", out var distance)
+                                                    ? distance.ToString() + " km"
+                                                    : "Not specified")
+                    </p>
+
+                            <p class="mb-3">
+                                <strong>Event Type:</strong>
+                                @typeName
+                            </p>
+
+                            <a asp-controller="Participant"
+                               asp-action="EventDetails"
+                               asp-route-id="@eventId"
+                               class="btn btn-outline-primary w-100 mb-3">
+                                View Details
+                            </a>
+
+                            <hr />
+
+                            <h6>Enrol in this event</h6>
+
+                    @if (hasCategories)
+                            {
+                                var eventCategories = categories
+                                .EnumerateArray()
+                                .Where(c =>
+                                c.TryGetProperty("eventId", out var categoryEventId)
+                                && categoryEventId.GetInt32() == eventId)
+                                .ToList();
+
+                                if (eventCategories.Any())
+                                {
+                                    <form asp-controller="Participant"
+                                          asp-action="Enrol"
+                                          method="post"
+                                          class="mt-auto">
+
+                                        <input type="hidden"
+                                               name="eventId"
+                                               value="@eventId" />
+
+                                        <label class="form-label">
+                                            Choose your category
+                                        </label>
+
+                                        <select name="categoryId"
+                                                class="form-select mb-3"
+                                                required>
+
+                                            <option value="">
+                                                Select a category
+                                            </option>
+
+                                            @foreach (var category in eventCategories)
+                                            {
+                                                <option value="@category.GetProperty("categoryId").GetInt32()">
+                                                    @category.GetProperty("categoryName").GetString()
+                                                </option>
+                                            }
+                                        </select>
+
+                                        <button type="submit"
+                                                class="btn btn-success w-100">
+                                            Enrol Now
+                                        </button>
+
+                                    </form>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning mb-0">
+                                        No categories are available for this event yet.
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning mb-0">
+                                    Categories could not be loaded.
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+
+        <div id="noMatchingEvents"
+             class="alert alert-info mt-4"
+             style="display:none;">
+            No events match your search. Try changing your filters.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            No events are currently available.
+        </div>
+    }
+
+    <a asp-controller="Participant"
+       asp-action="Dashboard"
+       class="btn btn-secondary mt-4">
+        Back to Dashboard
+    </a>
+
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const searchInput = document.getElementById("eventSearch");
+            const locationFilter = document.getElementById("locationFilter");
+            const typeFilter = document.getElementById("eventTypeFilter");
+            const clearButton = document.getElementById("clearFilters");
+
+            if (!searchInput || !locationFilter || !typeFilter) {
+                return;
+            }
+
+            const eventCards = document.querySelectorAll(".event-card");
+            const eventCount = document.getElementById("eventCount");
+            const noMatchingEvents = document.getElementById("noMatchingEvents");
+
+            function filterEvents() {
+
+                const searchValue = searchInput.value.toLowerCase().trim();
+                const selectedLocation = locationFilter.value.toLowerCase();
+                const selectedType = typeFilter.value.toLowerCase();
+
+                let visibleCount = 0;
+
+                eventCards.forEach(function (card) {
+
+                    const name = card.dataset.eventName.toLowerCase();
+                    const location = card.dataset.eventLocation.toLowerCase();
+                    const type = card.dataset.eventType.toLowerCase();
+
+                    const matchesName = name.includes(searchValue);
+
+                    const matchesLocation =
+                        selectedLocation === "" ||
+                        location === selectedLocation;
+
+                    const matchesType =
+                        selectedType === "" ||
+                        type === selectedType;
+
+                    const showCard =
+                        matchesName && matchesLocation && matchesType;
+
+                    card.style.display = showCard ? "" : "none";
+
+                    if (showCard) {
+                        visibleCount++;
+                    }
+                });
+
+                eventCount.textContent =
+                    "Showing " + visibleCount + " of " +
+                    eventCards.length + " event(s).";
+
+                noMatchingEvents.style.display =
+                    visibleCount === 0 ? "block" : "none";
+            }
+
+            searchInput.addEventListener("input", filterEvents);
+            locationFilter.addEventListener("change", filterEvents);
+            typeFilter.addEventListener("change", filterEvents);
+
+            clearButton.addEventListener("click", function () {
+                searchInput.value = "";
+                locationFilter.value = "";
+                typeFilter.value = "";
+
+                filterEvents();
+            });
+
+        });
+    </script>
+}

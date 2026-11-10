@@ -1,0 +1,126 @@
+﻿@using System.Text.Json
+
+@{
+    ViewData["Title"] = "My Results";
+
+    JsonElement results = ViewBag.Results is JsonElement json
+        ? json : default;
+
+    bool hasResults =
+        results.ValueKind == JsonValueKind.Array &&
+        results.GetArrayLength() > 0;
+}
+
+<div class="container mt-4 mb-5">
+
+    <h2>My Results</h2>
+
+    <p class="text-muted">
+        View your race history and performance.
+    </p>
+
+    @if (ViewBag.ApiError != null)
+    {
+        <div class="alert alert-danger">
+            Could not load your results: @ViewBag.ApiError
+        </div>
+    }
+    else if (hasResults)
+    {
+        <div class="row g-4">
+
+            @foreach (var item in results.EnumerateArray())
+            {
+                string eventName = "RaceDay Event";
+                string categoryName = "Not specified";
+                string position = "Not available";
+                string raceTime = "Not available";
+
+                // GET ENROLMENT DETAILS
+                if (item.TryGetProperty("enrolment", out var enrolment)
+                && enrolment.ValueKind == JsonValueKind.Object)
+                {
+                    // EVENT NAME
+                    if (enrolment.TryGetProperty("event", out var raceEvent)
+                    && raceEvent.ValueKind == JsonValueKind.Object)
+                    {
+                        if (raceEvent.TryGetProperty("eventName", out var name))
+                        {
+                            eventName = name.GetString() ?? "RaceDay Event";
+                        }
+                    }
+
+                    // CATEGORY NAME
+                    if (enrolment.TryGetProperty("category", out var category)
+                    && category.ValueKind == JsonValueKind.Object)
+                    {
+                        if (category.TryGetProperty("categoryName", out var catName))
+                        {
+                            categoryName = catName.GetString() ?? "Not specified";
+                        }
+                    }
+                }
+
+                // FINISHING POSITION
+                if (item.TryGetProperty("finishingPosition", out var finishingPosition))
+                {
+                    position = finishingPosition.ToString();
+                }
+
+                // FINISH TIME
+                if (item.TryGetProperty("finishTime", out var finish))
+                {
+                    raceTime = finish.ToString();
+                }
+
+                <div class="col-md-6 col-lg-4">
+
+                    <div class="card shadow-sm h-100">
+
+                        <div class="card-body">
+
+                            <h5 class="card-title">
+                                @eventName
+                            </h5>
+
+                            <hr />
+
+                            <p>
+                                <strong>Category:</strong>
+                                @categoryName
+                            </p>
+
+                            <p>
+                                <strong>Finishing Position:</strong>
+                                @position
+                            </p>
+
+                            <p>
+                                <strong>Race Time:</strong>
+                                @raceTime
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            You do not have any race results yet.
+            Your results will appear here once they have been recorded.
+        </div>
+    }
+
+    <a asp-controller="Participant"
+       asp-action="Dashboard"
+       class="btn btn-secondary mt-4">
+        Back to Dashboard
+    </a>
+
+</div>

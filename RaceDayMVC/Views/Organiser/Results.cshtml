@@ -1,0 +1,91 @@
+﻿@model List<RaceDayMVC.Models.ResultViewModel>
+
+@{
+    ViewData["Title"] = "Race Results";
+}
+
+<div class="container mt-5">
+    <h1>Race Results</h1>
+    <p class="text-muted">View finishing positions and times for your events.</p>
+
+    <div class="mb-3">
+        <a asp-controller="Organiser"
+           asp-action="CreateResult"
+           class="btn btn-primary">
+            Add Race Result
+        </a>
+
+        <a asp-controller="Organiser"
+           asp-action="Dashboard"
+           class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">
+            No race results have been recorded yet.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Participant</th>
+                        <th>Email</th>
+                        <th>Event</th>
+                        <th>Category</th>
+                        <th>Finishing Position</th>
+                        <th>Finish Time</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var result in Model)
+                    {
+                        <tr>
+                            <td>
+                                @(result.Enrolment?.Participant == null
+                                                        ? "Unknown"
+                                                        : result.Enrolment.Participant.FirstName + " " +
+                                                        result.Enrolment.Participant.LastName)
+                                                                                          </td>
+
+                            <td>
+                                @(result.Enrolment?.Participant?.Email ?? "N/A")
+                            </td>
+
+                            <td>
+                                @(result.Enrolment?.Event?.EventName ?? "Unknown event")
+                            </td>
+
+                            <td>
+                                @(result.Enrolment?.Category?.CategoryName ?? "N/A")
+                            </td>
+
+                            <td>
+                                @(result.FinishingPosition?.ToString() ?? "N/A")
+                            </td>
+
+                            <td>
+                                @(result.FinishTime.HasValue
+                                                        ? result.FinishTime.Value.ToString(@"hh\:mm\:ss")
+                                                        : "N/A")
+                    </td>
+                </tr>
+                                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -1,0 +1,78 @@
+﻿@model List<RaceDayMVC.Models.EnrolmentViewModel>
+
+@{
+    ViewData["Title"] = "Enrolments";
+}
+
+<div class="container mt-5">
+
+    <h1>Registered Participants</h1>
+
+    <p class="text-muted">
+        View participants registered for your sporting events.
+    </p>
+
+    <a asp-controller="Organiser"
+       asp-action="Dashboard"
+       class="btn btn-secondary mb-3">
+        Back to Dashboard
+    </a>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">
+            No participants have registered for your events yet.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-striped">
+
+                <thead class="table-dark">
+                    <tr>
+                        <th>Participant Name</th>
+                        <th>Email</th>
+                        <th>Event</th>
+                        <th>Category</th>
+                        <th>Enrolment Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @(item.Participant == null
+                                                        ? "Unknown"
+                                                        : item.Participant.FirstName + " " +
+                                                        item.Participant.LastName)
+                    </td>
+
+                            <td>
+                                @(item.Participant?.Email ?? "Not available")
+                            </td>
+
+                            <td>
+                                @(item.Event?.EventName ?? "Unknown")
+                            </td>
+
+                            <td>
+                                @(item.Category?.CategoryName ?? "Unknown")
+                            </td>
+
+                            <td>
+                                @item.EnrolmentDate.ToString("dd/MM/yyyy")
+                            </td>
+                        </tr>
+                                }
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+
+</div>

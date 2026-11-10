@@ -1,0 +1,108 @@
+﻿@{
+    ViewData["Title"] = "Participant Dashboard";
+}
+
+<div class="container mt-5 mb-5">
+
+    <!-- Dashboard Heading -->
+    <div class="mb-4">
+        <h1>Welcome to RaceDay!</h1>
+
+        <h3 class="text-muted">Participant Dashboard</h3>
+
+        <p class="mt-3">
+            Welcome, <strong>@ViewBag.Email</strong>
+        </p>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div class="row g-4">
+
+        <!-- Upcoming Events -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Upcoming Events</h5>
+
+                    <p class="card-text">
+                        Discover upcoming races and cycling events.
+                    </p>
+
+                    <a asp-controller="Participant"
+                       asp-action="BrowseEvents"
+                       class="btn btn-primary">
+                        Browse Events
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Enrolments -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">My Enrolments</h5>
+
+                    <p class="card-text">
+                        View the events you have registered for.
+                    </p>
+
+                    <a asp-controller="Participant"
+                       asp-action="MyEnrolments"
+                       class="btn btn-primary">
+                        View My Enrolments
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Results -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">My Results</h5>
+
+                    <p class="card-text">
+                        View your race history and results.
+                    </p>
+
+                    <a asp-controller="Participant"
+                       asp-action="MyResults"
+                       class="btn btn-primary">
+                        View My Results
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Profile -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">My Profile</h5>
+
+                    <p class="card-text">
+                        View your personal account information,
+                        including your name, email and participant role.
+                    </p>
+
+                    <a asp-controller="Participant"
+                       asp-action="Profile"
+                       class="btn btn-primary">
+                        View My Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- API Error -->
+    @if (ViewBag.ApiError != null)
+    {
+        <div class="alert alert-danger mt-4">
+            @ViewBag.ApiError
+        </div>
+    }
+
+</div>

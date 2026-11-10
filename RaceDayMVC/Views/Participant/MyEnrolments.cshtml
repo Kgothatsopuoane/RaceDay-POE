@@ -1,0 +1,161 @@
+﻿@using System.Text.Json
+
+@{
+    ViewData["Title"] = "My Enrolments";
+
+    JsonElement enrolments = ViewBag.Enrolments is JsonElement json
+        ? json : default;
+
+    bool hasEnrolments =
+        enrolments.ValueKind == JsonValueKind.Array &&
+        enrolments.GetArrayLength() > 0;
+}
+
+<div class="container mt-4 mb-5">
+
+    <h2>My Enrolments</h2>
+
+    <p class="text-muted">
+        View and keep track of the events you have registered for.
+    </p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (ViewBag.ApiError != null)
+    {
+        <div class="alert alert-danger">
+            Could not load your enrolments: @ViewBag.ApiError
+        </div>
+    }
+    else if (hasEnrolments)
+    {
+        <div class="row g-4">
+
+            @foreach (var item in enrolments.EnumerateArray())
+            {
+                string eventName =
+                item.TryGetProperty("eventName", out var name)
+                ? name.GetString() ?? "RaceDay Event"
+                : "RaceDay Event";
+
+                string categoryName =
+                item.TryGetProperty("categoryName", out var category)
+                ? category.GetString() ?? "Not specified"
+                : "Not specified";
+
+                string enrolmentDate =
+                item.TryGetProperty("enrolmentDate", out var date)
+                ? date.ToString()
+                : "Not specified";
+
+                string enrolmentId =
+                item.TryGetProperty("enrolmentId", out var id)
+                ? id.ToString()
+                : "Not specified";
+
+                bool hasEventId =
+                item.TryGetProperty("eventId", out var eventIdProperty)
+                && eventIdProperty.ValueKind == JsonValueKind.Number;
+
+                int eventId = hasEventId
+                ? eventIdProperty.GetInt32()
+                : 0;
+
+                string? status = null;
+
+                if (item.TryGetProperty("status", out var statusProperty))
+                {
+                    status = statusProperty.ToString();
+                }
+                else if (item.TryGetProperty("enrolmentStatus", out var enrolmentStatus))
+                {
+                    status = enrolmentStatus.ToString();
+                }
+
+                <div class="col-md-6 col-lg-4">
+
+                    <div class="card shadow-sm h-100">
+
+                        <div class="card-body">
+
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+
+                                <h5 class="card-title">
+                                    @eventName
+                                </h5>
+
+                                <span class="badge bg-success">
+                                    Enrolled
+                                </span>
+
+                            </div>
+
+                            <hr />
+
+                            <p>
+                                <strong>Category:</strong>
+                                @categoryName
+                            </p>
+
+                            <p>
+                                <strong>Enrolment Date:</strong>
+                                @enrolmentDate
+                            </p>
+
+                            <p>
+                                <strong>Enrolment ID:</strong>
+                                @enrolmentId
+                            </p>
+
+                            @if (!string.IsNullOrWhiteSpace(status))
+                            {
+                                <p>
+                                    <strong>Enrolment Status:</strong>
+                                    @status
+                                </p>
+                            }
+
+                            @if (hasEventId)
+                            {
+                                <a asp-controller="Participant"
+                                   asp-action="EventDetails"
+                                   asp-route-id="@eventId"
+                                   class="btn btn-outline-primary w-100 mt-2">
+                                    View Event Details
+                                </a>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            You have not enrolled in any events yet.
+
+            <a asp-controller="Participant"
+               asp-action="BrowseEvents"
+               class="alert-link">
+                Browse available events
+            </a>
+        </div>
+    }
+
+    <a asp-controller="Participant"
+       asp-action="Dashboard"
+       class="btn btn-secondary mt-4">
+        Back to Dashboard
+    </a>
+
+</div>

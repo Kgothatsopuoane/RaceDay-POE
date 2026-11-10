@@ -1,0 +1,198 @@
+﻿@model RaceDayMVC.Models.ParticipantProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container mt-5 mb-5">
+
+    <div class="mb-4">
+        <h1>My Profile</h1>
+        <p class="text-light">
+            View and manage your RaceDay participant account.
+        </p>
+    </div>
+
+    @if (ViewBag.ApiError != null)
+    {
+        <div class="alert alert-danger">
+            @ViewBag.ApiError
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["ProfileError"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ProfileError"]
+        </div>
+    }
+
+    <div class="card shadow">
+
+        <div class="card-header">
+            <h4 class="mb-0">Participant Information</h4>
+        </div>
+
+        <div class="card-body">
+
+            <!-- PROFILE PICTURE -->
+            <div class="text-center mb-4">
+
+                <h5 class="mb-3">My Profile Picture</h5>
+
+                <img src="@Url.Action("ProfilePicture", "Participant")"
+                     alt="Participant Profile Picture"
+                     class="rounded-circle shadow"
+                     style="width:150px;
+                            height:150px;
+                            object-fit:cover;
+                            border:4px solid #dee2e6;"
+                     onerror="this.style.display='none';" />
+
+            </div>
+
+            <hr />
+
+            <!-- UPLOAD PROFILE PICTURE -->
+            <div class="mb-4">
+
+                <h5>Upload Profile Picture</h5>
+
+                <p class="text-muted">
+                    Choose a profile picture from your computer.
+                    Maximum file size: 5 MB.
+                </p>
+
+                <form asp-controller="Participant"
+                      asp-action="UploadProfilePicture"
+                      method="post"
+                      enctype="multipart/form-data">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Select Profile Picture
+                        </label>
+
+                        <input type="file"
+                               name="file"
+                               class="form-control"
+                               accept="image/*"
+                               required />
+
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i>
+                        Upload Picture
+                    </button>
+
+                </form>
+
+            </div>
+
+            <hr />
+
+            <!-- EDIT ACCOUNT DETAILS -->
+            <h5 class="mb-3">Edit Account Details</h5>
+
+            <form asp-controller="Participant"
+                  asp-action="UpdateProfile"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <!-- USER ID -->
+                <div class="mb-3">
+
+                    <label class="form-label">User ID</label>
+
+                    <input class="form-control"
+                           value="@Model.UserId"
+                           readonly />
+
+                </div>
+
+                <!-- FIRST NAME -->
+                <div class="mb-3">
+
+                    <label for="firstName" class="form-label">
+                        First Name
+                    </label>
+
+                    <input type="text"
+                           id="firstName"
+                           name="firstName"
+                           class="form-control"
+                           value="@Model.FirstName"
+                           maxlength="100"
+                           required />
+
+                </div>
+
+                <!-- LAST NAME -->
+                <div class="mb-3">
+
+                    <label for="lastName" class="form-label">
+                        Last Name
+                    </label>
+
+                    <input type="text"
+                           id="lastName"
+                           name="lastName"
+                           class="form-control"
+                           value="@Model.LastName"
+                           maxlength="100"
+                           required />
+
+                </div>
+
+                <!-- EMAIL -->
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Email Address
+                    </label>
+
+                    <input class="form-control"
+                           value="@Model.Email"
+                           readonly />
+
+                </div>
+
+                <!-- ROLE -->
+                <div class="mb-3">
+
+                    <label class="form-label">Role</label>
+
+                    <input class="form-control"
+                           value="@Model.Role"
+                           readonly />
+
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-save"></i>
+                    Save Changes
+                </button>
+
+                <a asp-controller="Participant"
+                   asp-action="Dashboard"
+                   class="btn btn-secondary">
+                    Back to Dashboard
+                </a>
+
+            </form>
+
+        </div>
+    </div>
+</div>

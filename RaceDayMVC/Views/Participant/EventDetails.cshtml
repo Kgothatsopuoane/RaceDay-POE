@@ -1,0 +1,135 @@
+﻿@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Event Details";
+
+    JsonElement raceEvent = Model is JsonElement eventJson
+        ? eventJson : default;
+
+    bool hasEvent = raceEvent.ValueKind == JsonValueKind.Object;
+
+    int eventId = hasEvent && raceEvent.TryGetProperty("eventId", out var id)
+        ? id.GetInt32() : 0;
+
+    string eventName = hasEvent && raceEvent.TryGetProperty("eventName", out var name)
+        ? name.GetString() ?? "Event Details" : "Event Details";
+
+    string description = hasEvent && raceEvent.TryGetProperty("description", out var desc)
+        ? desc.GetString() ?? "No description available."
+        : "No description available.";
+
+    string location = hasEvent && raceEvent.TryGetProperty("location", out var loc)
+        ? loc.GetString() ?? "Not specified" : "Not specified";
+
+    string eventType = hasEvent && raceEvent.TryGetProperty("eventType", out var type)
+        ? type.GetString() ?? "Not specified" : "Not specified";
+
+    string eventDate = hasEvent && raceEvent.TryGetProperty("eventDate", out var date)
+        ? date.ToString() : "Not specified";
+
+    string distance = hasEvent && raceEvent.TryGetProperty("distanceKm", out var km)
+        ? km.ToString() + " km" : "Not specified";
+
+    string bannerUrl = Url.Action(
+        "EventBanner", "Participant", new { id = eventId }) ?? "";
+}
+
+<div class="container mt-5 mb-5">
+
+    @if (!hasEvent)
+    {
+        <div class="alert alert-danger">
+            @(ViewBag.ApiError ?? "Event details could not be loaded.")
+        </div>
+    }
+    else
+    {
+        <a asp-controller="Participant"
+           asp-action="BrowseEvents"
+           class="btn btn-secondary mb-4">
+            Back to Events
+        </a>
+
+        <div class="card shadow border-0 overflow-hidden">
+
+            <img src="@bannerUrl"
+                 alt="@eventName banner"
+                 class="w-100"
+                 style="height:350px; object-fit:cover;"
+                 onerror="this.style.display='none';" />
+
+            <div class="card-body p-4">
+
+                <h1 class="mb-3">@eventName</h1>
+
+                <p class="text-muted">
+                    @description
+                </p>
+
+                <hr />
+
+                <h4 class="mb-3">Event Information</h4>
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <strong>Event Date</strong>
+                        <p>@eventDate</p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <strong>Location</strong>
+                        <p>@location</p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <strong>Distance</strong>
+                        <p>@distance</p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <strong>Event Type</strong>
+                        <p>@eventType</p>
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <h4>Available Categories</h4>
+
+                @if (raceEvent.TryGetProperty("categories", out var categories)
+                            && categories.ValueKind == JsonValueKind.Array
+                            && categories.GetArrayLength() > 0)
+                {
+                    <ul class="list-group mb-4">
+
+                        @foreach (var category in categories.EnumerateArray())
+                        {
+                            <li class="list-group-item">
+                                @(category.TryGetProperty("categoryName", out var categoryName)
+                                                    ? categoryName.GetString()
+                                                    : "Category")
+                </li>
+                                }
+
+                    </ul>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        No categories are currently available.
+                    </div>
+                }
+
+                <a asp-controller="Participant"
+                   asp-action="BrowseEvents"
+                   class="btn btn-primary">
+                    Go to Enrolment
+                </a>
+
+            </div>
+        </div>
+    }
+
+</div>

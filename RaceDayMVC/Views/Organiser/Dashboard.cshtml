@@ -1,0 +1,281 @@
+﻿@using RaceDayMVC.Models
+
+@{
+    ViewData["Title"] = "Organiser Dashboard";
+
+    int totalEvents = ViewBag.TotalEvents ?? 0;
+    int upcomingEvents = ViewBag.UpcomingEvents ?? 0;
+    int totalEnrolments = ViewBag.TotalEnrolments ?? 0;
+
+    var upcomingEventList =
+        ViewBag.UpcomingEventList as List<EventViewModel>
+        ?? new List<EventViewModel>();
+}
+
+<div class="container mt-5 mb-5">
+
+    <!-- DASHBOARD HEADER -->
+    <div class="mb-4">
+        <h1 class="fw-bold">RaceDay Organiser Dashboard</h1>
+
+        <p class="text-muted">
+            Manage your sporting events, participants and race results.
+        </p>
+    </div>
+
+    <!-- WELCOME MESSAGE -->
+    <div class="alert alert-primary shadow-sm">
+        <h5 class="mb-1">Welcome, @ViewBag.Email!</h5>
+        <p class="mb-0">
+            Welcome to your organiser dashboard.
+        </p>
+    </div>
+
+    <!-- API ERROR -->
+    @if (ViewBag.ApiError != null)
+    {
+        <div class="alert alert-danger">
+            @ViewBag.ApiError
+        </div>
+    }
+
+    <!-- SUCCESS MESSAGE -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    <!-- DASHBOARD STATISTICS -->
+    <h3 class="mb-3">Dashboard Overview</h3>
+
+    <div class="row g-3 mb-5">
+
+        <!-- TOTAL EVENTS -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center p-4">
+                    <h6 class="text-muted">Total Events</h6>
+
+                    <h1 class="fw-bold text-primary">
+                        @totalEvents
+                    </h1>
+
+                    <p class="mb-0">
+                        Events created by you
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- UPCOMING EVENTS -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center p-4">
+                    <h6 class="text-muted">Upcoming Events</h6>
+
+                    <h1 class="fw-bold text-success">
+                        @upcomingEvents
+                    </h1>
+
+                    <p class="mb-0">
+                        Events still to take place
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOTAL ENROLMENTS -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center p-4">
+                    <h6 class="text-muted">Total Enrolments</h6>
+
+                    <h1 class="fw-bold text-info">
+                        @totalEnrolments
+                    </h1>
+
+                    <p class="mb-0">
+                        Participants registered
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- UPCOMING EVENTS -->
+    <div class="card shadow-sm border-0 mb-5">
+
+        <div class="card-header bg-primary text-white p-3">
+            <h4 class="mb-0">Upcoming Events</h4>
+        </div>
+
+        <div class="card-body">
+
+            @if (upcomingEventList.Any())
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Location</th>
+                                <th>Date</th>
+                                <th>Distance</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var raceEvent in upcomingEventList)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">
+                                        @raceEvent.EventName
+                                    </td>
+
+                                    <td>
+                                        @raceEvent.Location
+                                    </td>
+
+                                    <td>
+                                        @raceEvent.EventDate.ToString("dd MMM yyyy")
+                                    </td>
+
+                                    <td>
+                                        @raceEvent.DistanceKm km
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <h5>No Upcoming Events</h5>
+
+                    <p class="text-muted">
+                        You have no upcoming events at the moment.
+                    </p>
+
+                    <a asp-controller="Organiser"
+                       asp-action="CreateEvent"
+                       class="btn btn-primary">
+                        Create Your First Event
+                    </a>
+                </div>
+            }
+
+        </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <h3 class="mb-3">Quick Actions</h3>
+
+    <div class="row g-3">
+
+        <!-- MANAGE EVENTS -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold">Manage Events</h5>
+
+                    <p class="text-muted">
+                        Create, edit and delete your sporting events.
+                    </p>
+
+                    <a asp-controller="Organiser"
+                       asp-action="ManageEvents"
+                       class="btn btn-primary">
+                        Manage Events
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- CREATE EVENT -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold">Create Event</h5>
+
+                    <p class="text-muted">
+                        Add a new sporting event to RaceDay.
+                    </p>
+
+                    <a asp-controller="Organiser"
+                       asp-action="CreateEvent"
+                       class="btn btn-success">
+                        Create Event
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ENROLMENTS -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold">Enrolments</h5>
+
+                    <p class="text-muted">
+                        View participants registered for your events.
+                    </p>
+
+                    <a asp-controller="Organiser"
+                       asp-action="Enrolments"
+                       class="btn btn-primary">
+                        View Enrolments
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- RACE RESULTS -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold">Race Results</h5>
+
+                    <p class="text-muted">
+                        View and manage participant race results.
+                    </p>
+
+                    <a asp-controller="Organiser"
+                       asp-action="Results"
+                       class="btn btn-primary">
+                        Manage Results
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADD RESULT -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold">Add Race Result</h5>
+
+                    <p class="text-muted">
+                        Record a participant's finishing position and time.
+                    </p>
+
+                    <a asp-controller="Organiser"
+                       asp-action="CreateResult"
+                       class="btn btn-success">
+                        Add Result
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
